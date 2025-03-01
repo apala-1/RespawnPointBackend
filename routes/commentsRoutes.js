@@ -26,18 +26,20 @@ router.post("/forum", authenticate, async (req, res) => {
     }
   });
   
-
-// Get comments for a specific game
 // Get comments for a specific game
 router.get("/forum/:gameId", async (req, res) => {
     try {
       const { gameId } = req.params;
       const comments = await pool.query(
-          `SELECT comments.*, "Users"."name" 
-           FROM comments 
-           JOIN "Users" ON comments.user_id = "Users".id 
-           WHERE game_id = $1 
-           ORDER BY comments.created_at DESC`, 
+        `
+    SELECT comments.id, comments.comment, comments.user_id, 
+    "Users".name AS user_name, 
+    "Users".email AS user_email ,
+    "Users".role AS user_role
+    FROM comments
+    JOIN "Users" ON comments.user_id = "Users".id
+    WHERE comments.game_id = $1
+  `, 
           [gameId]
         );
         

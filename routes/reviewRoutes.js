@@ -32,17 +32,24 @@ router.post("/game", authenticate, async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
-
-  
-// Get comments for a specific game
 router.get("/game/:gameId", async (req, res) => {
     try {
-        const { gameId } = req.params;
-        const result = await pool.query("SELECT * FROM reviews WHERE game_id = $1", [gameId]);
-        res.json(result.rows);
+      const { gameId } = req.params;
+      const result = await pool.query(`
+        SELECT reviews.id, reviews.review, reviews.user_id, 
+               "Users".name AS user_name, 
+               "Users".email AS user_email ,
+               "Users".role AS user_role
+        FROM reviews
+        JOIN "Users" ON reviews.user_id = "Users".id
+        WHERE reviews.game_id = $1`, [gameId]);
+  
+      console.log(result.rows); 
+  
+      res.json(result.rows);
     } catch (error) {
-        console.error("Error fetching reviews:", error);
-        res.status(500).json({ error: "Server error" });
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ error: "Server error" });
     }
   });
   
